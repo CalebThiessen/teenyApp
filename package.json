@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/CalebThiessen/teenyApp/issues"
   },
-  "homepage": "https://github.com/CalebThiessen/teenyApp#readme"
+  "homepage": "https://github.com/CalebThiessen/teenyApp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
