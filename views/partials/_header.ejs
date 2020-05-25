@@ -13,17 +13,18 @@
         
       </div>
       <% if (username) {%>
-      <h1><%=username%></h1>
+      <h1><%=username.email%></h1>
       <form class="form-inline" action="/logout" method="POST">
       
           <button type="submit" class="btn btn-primary" style="width: 100px; margin-left: 10px"  >Logout</button>
       </form>
       <%} else {%>
       
-      <form class="form-inline" action="/login" method="POST">
-        <input class="form-control" type="text" name="username" style="width: 150px" placeholder="username" >
-          <button type="submit" class="btn btn-primary" style="width: 100px; margin-left: 10px"  >sign in</button>
-      </form>
+      
+        
+        <a style="color: white; font-weight: bold" class="nav-item nav-link" href="/login">Login</a>
+        <a style="color: white; font-weight: bold" class="nav-item nav-link" href="/registration">Register</a>
+      
     <%}%>
     </nav>
   </header>

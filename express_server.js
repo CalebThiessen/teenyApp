@@ -12,6 +12,19 @@ const urlDatabase = {
     "sv9snd": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 function randomStringGenerator(length, chars) {
   var result = '';
   for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
@@ -28,8 +41,10 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-    let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
-    res.render("urls_index", templateVars);
+
+  let templateVars = { urls: urlDatabase, username: users[req.cookies.userID] };
+  //console.log(templateVars)  
+  res.render("urls_index", templateVars);
   });
 
   app.get("/urls/new", (req, res) => {
@@ -39,7 +54,6 @@ app.get("/urls", (req, res) => {
 
   app.post("/urls", (req, res) => {
     urlDatabase[rstring] = req.body.longURL
-    console.log(urlDatabase);
     res.redirect("/urls/" + rstring)        
   });
   
@@ -68,18 +82,51 @@ app.get("/urls", (req, res) => {
   });
   
   app.post("/login", (req, res) => {
+   // console.log(req)
     res.cookie("username", req.body.username);
     res.redirect("/urls");
+    
   });
 
   app.post("/logout", (req, res) => {
-    res.clearCookie("username")
+    res.clearCookie("userID")
     res.redirect("/urls");
   });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+app.get("/registration", (req, res) => {
+  let templateVars = {username: req.cookies["username"] };
+  res.render("urls_registration", templateVars);
   });
+
+  app.post("/registration", (req, res) => {
+    for (elem in users) {
+    // console.log(users[elem].email)
+    // console.log(req.body.email)
+      if (users[elem].email === req.body.email){
+        console.log("user " + req.body.email + " already exists")
+        res.redirect("/registration")
+        return
+      }
+    
+    let newUserID = rstring;
+    
+    users[newUserID] = {
+    id: newUserID,
+    email: req.body.email,
+    password: req.body.password
+    }
+    res.cookie("userID", newUserID);
+    res.redirect("/urls");
+    return  
+    }
+  });
+
+  app.get("/login", (req, res) => {
+    let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+    res.render("urls_login", templateVars);
+  })
+
+  
 
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}!`);
