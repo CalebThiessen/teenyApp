@@ -43,12 +43,14 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
 
   let templateVars = { urls: urlDatabase, username: users[req.cookies.userID] };
-  //console.log(templateVars)  
+  
+  
   res.render("urls_index", templateVars);
   });
 
   app.get("/urls/new", (req, res) => {
-    let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+   
+    let templateVars = { urls: urlDatabase, username: req.cookies["userID"] };
     res.render("urls_new", templateVars);
   });
 
@@ -58,7 +60,7 @@ app.get("/urls", (req, res) => {
   });
   
   app.get("/urls/:shortURL", (req, res) => {
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["userID"] };
     res.render("urls_show", templateVars);
   });
   
@@ -82,47 +84,65 @@ app.get("/urls", (req, res) => {
   });
   
   app.post("/login", (req, res) => {
-   // console.log(req)
-    res.cookie("username", req.body.username);
-    res.redirect("/urls");
+   if (duplicationChecker(req.body) === true){
     
+    for (elem in users) {
+      if ((users[elem].email === req.body.email) && (users[elem].password === req.body.password)){
+        res.cookie("userID", elem);
+        res.redirect("/urls")
+        return
+      } 
+     }
+     console.log("error 403: password incorrect")
+     res.redirect("/login")
+     return
+   }
+   console.log("please register first " + req.body.email)
+   res.redirect("/login");
+      
+    
+
   });
 
   app.post("/logout", (req, res) => {
     res.clearCookie("userID")
     res.redirect("/urls");
+    
   });
 
 app.get("/registration", (req, res) => {
-  let templateVars = {username: req.cookies["username"] };
+  
+  let templateVars = {username: req.cookies["userId"] };
   res.render("urls_registration", templateVars);
   });
 
+  function duplicationChecker(data){
+  for (elem in users){
+    if (users[elem].email === data.email)
+    return true
+  }
+  return false
+  }
+  
   app.post("/registration", (req, res) => {
-    for (elem in users) {
-    // console.log(users[elem].email)
-    // console.log(req.body.email)
-      if (users[elem].email === req.body.email){
-        console.log("user " + req.body.email + " already exists")
-        res.redirect("/registration")
-        return
-      }
-    
-    let newUserID = rstring;
-    
-    users[newUserID] = {
-    id: newUserID,
-    email: req.body.email,
-    password: req.body.password
+    if (duplicationChecker(req.body) === true) {
+      console.log("error 403: user with that email already exists!");
+      return;
     }
+    const newUserID = rstring;
+    users[newUserID] = {
+      id: newUserID,
+      email: req.body.email,
+      password: req.body.password,
+    };
     res.cookie("userID", newUserID);
     res.redirect("/urls");
-    return  
-    }
+
+    console.log(users);
   });
 
   app.get("/login", (req, res) => {
-    let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+    let templateVars = { urls: urlDatabase, username: req.cookies["userID"] };
     res.render("urls_login", templateVars);
   })
 
