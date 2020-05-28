@@ -7,6 +7,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 const cookieParser = require('cookie-parser')
 app.use(cookieParser());
 
+const bcrypt = require('bcrypt');
+
 const urlDatabase = {
     "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: "defUser"},
     "sv9snd": {longURL: "http://www.google.com", userID: "defUser"}
@@ -58,10 +60,14 @@ app.get("/urls", (req, res) => {
     res.render("urls_index", templateVars);
   } else {
     
-    res.redirect("/login");
+    res.redirect("/pleaseLogin");
   }
 });
 
+app.get("/pleaseLogin", (req, res) => {
+  let templateVars = { username: users[req.cookies.userID] }
+  res.render("pleaselogin", templateVars)
+})
   
 app.get("/urls/new", (req, res) => {
    
@@ -112,7 +118,7 @@ app.get("/urls/new", (req, res) => {
    if (duplicationChecker(req.body) === true){
     
     for (elem in users) {
-      if ((users[elem].email === req.body.email) && (users[elem].password === req.body.password)){
+      if ((users[elem].email === req.body.email) && (bcrypt.compareSync(req.body.password, users[elem].password))){
         res.cookie("userID", elem);
         res.redirect("/urls")
         return
@@ -150,6 +156,10 @@ app.get("/registration", (req, res) => {
   }
   
   app.post("/registration", (req, res) => {
+    
+    // const password = "purple-monkey-dinosaur"; // found in the req.params object
+    // const hashedPassword = bcrypt.hashSync(password, 10);
+
     if (duplicationChecker(req.body) === true) {
       console.log("error 403: user with that email already exists!");
       return;
@@ -158,8 +168,9 @@ app.get("/registration", (req, res) => {
     users[newUserID] = {
       id: newUserID,
       email: req.body.email,
-      password: req.body.password,
+      password: bcrypt.hashSync(req.body.password, 10)
     };
+
     res.cookie("userID", newUserID);
     res.redirect("/urls");
 
