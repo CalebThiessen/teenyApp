@@ -62,6 +62,8 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
 
   if (req.session.user_id) {
+    // console.log(users[req.session.user_id])
+    // console.log(users)
     let usersURLS = urlsForID(req);
     let templateVars = { urls: usersURLS, username: users[req.session.user_id] };
     res.render("urls_index", templateVars);
@@ -83,7 +85,7 @@ app.get("/existingEmail", (req, res) => {
   
 app.get("/urls/new", (req, res) => {
    
-    let templateVars = { urls: urlDatabase, username: req.session.user_id };
+    let templateVars = { urls: urlDatabase, username: users[req.session.user_id] };
    
     if (templateVars.username){
     res.render("urls_new", templateVars);
@@ -100,8 +102,18 @@ app.get("/urls/new", (req, res) => {
   });
   
   app.get("/urls/:shortURL", (req, res) => {
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, username: req.session.user_id };
+   if((urlDatabase[req.params.shortURL]) && (users[req.session.user_id].id === urlDatabase[req.params.shortURL].user_id)) {
+     
+      
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, username: users[req.session.user_id] };
     res.render("urls_show", templateVars);
+  
+  } else {
+      let templateVars = { username: users[req.session.user_id] }
+      res.render("invalidShortURL", templateVars)
+    }
+    
+    
   });
   
   app.get("/u/:shortURL", (req, res) => {
@@ -131,7 +143,10 @@ app.get("/urls/new", (req, res) => {
     
     for (elem in users) {
       if ((users[elem].email === req.body.email) && (bcrypt.compareSync(req.body.password, users[elem].password))){
-        req.session.user_id = "user_id";
+        
+        req.session.user_id = elem;
+        //let templateVars = { username: users[req.session.user_id] }
+        
         res.redirect("/urls")
         return
       } 
@@ -155,7 +170,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/registration", (req, res) => {
   
-  let templateVars = {username: req.session.user_id };
+  let templateVars = { username: users[req.session.user_id] }
   res.render("urls_registration", templateVars);
   });
 
@@ -187,7 +202,8 @@ app.get("/registration", (req, res) => {
   });
 
   app.get("/login", (req, res) => {
-    let templateVars = { urls: urlDatabase, username: req.session.user_id };
+    let templateVars = { urls: urlDatabase, username: users[req.session.user_id] };
+   
     res.render("urls_login", templateVars);
   })
 
